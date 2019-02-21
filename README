@@ -1,0 +1,1 @@
+A chess bot written in python3 that utilizes python generators to achieve board analysis state persistence.
