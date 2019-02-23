@@ -45,39 +45,53 @@ def calculateMove(board,allowed_time):
 	future_boards = generateFutureBoards(board)
 	# Get all future board generators
 	board_generators = [calculateBoardValueRecurse(b) for b in future_boards]
-
-	# Update future boards lottery registry.
+	numPossibleMoves = len(board_generators)
+	# Update future boards lottery registry using "eyeing it" values
 	schedule_chances = [next(board_generator) for board_generator in board_generators]
 	# Keep doing this until we're out of time
 	while (time.monotonic() - start_time) < allowed_time:
 		schedule = []
 		# For all the different boards, add to the lottery pool the respective generator index multiple times based on registry.
-		for i in range(len(schedule_chances)):
+		for i in range(numPossibleMoves):
 			schedule.extend(schedule_chances[i]*i)
 		# Play the lottery! Grab a random value from the schedule. That's the index for the generator we're testing this time.
 		generator_index = schedule[random.randint(len(schedule))]
 		# Update lottery registry by giving that board position some computation time to calculate a better value.
-		schedule_chances[generator_index] = board_generators[generator_index].send(min(.1,allowed_time - (time.monotonic()-start_time)))
+		schedule_chances[generator_index] = board_generators[generator_index].send(min(allowed_time/numPossibleMoves,allowed_time - (time.monotonic()-start_time)))
 	return board.legal_moves[schedule_chances.index(max(schedule_chances))]
 
 # Calculates a board value using lookahead to work towards base cases.
 def calculateBoardValueRecurse(board):
 	# yield an "eyeing it" value.
 	allowed_time = yield calculateBoardValueBaseCase(board)
+
 	# We're interested in this move and want to know more. Let's do some more gooder calculation.
-	# I copied it because I'm a lazy bum
+
+	# What time did we start?
 	start_time = time.monotonic()
 	future_boards = generateFutureBoards(board)
 	board_generators = [calculateBoardValueRecurse(b) for b in future_boards]
+	numPossibleMoves = len(board_generators)
 	schedule_chances = [next(board_generator) for board_generator in board_generators]
-	while (time.monotonic() - start_time) < allowed_time:
-		schedule = []
-		for i in range(len(schedule_chances)):
-			schedule.extend(schedule_chances[i]*i)
-		generator_index = schedule[random.randint(len(schedule))]
-		schedule_chances[generator_index] = board_generators[generator_index].send(min(.1,allowed_time - (time.monotonic()-start_time)))
-	yield
-
+	bool isOpponentMove = False
+	while True:
+		# How long should we analyze submoves? enough time to theoretically analyze all possible moves.
+		maxTimePerMove = allowed_time / numPossibleMoves
+		isOpponentMove = not isOpponentMove
+		# Cache end time for faster while loop condition operation
+		end_time = start_time + allowed_time
+		while time.monotonic() < end_time:
+			# Prep the lottery!
+			schedule = []
+			for i in range(len(schedule_chances)):
+				schedule.extend(schedule_chances[i]*i)
+			generator_index = schedule[random.randint(len(schedule))]
+			# Play the lottery and update
+			schedule_chances[generator_index] = board_generators[generator_index].send(min(maxTimePerMove,allowed_time - (time.monotonic()-start_time)))
+		# This is not quite right. Our board is now divorced from the original board generators. I don't think that's okay.
+		#board.push(board.legal_moves[schedule_chances.index(max(schedule_chances))])
+		allowed_time = (yield MAX_BOARD_VALUE - schedule_chances.index(max(schedule_chances))) if isOpponentMove else (yield schedule_chances.index(max(schedule_chances)))
+		start_time = time.monotonic()
 # Initialization stuff
 
 # Assigning arbitrary weights to these functions based on guess work. If I felt like spending time making a harness along with some light
