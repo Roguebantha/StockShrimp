@@ -9,11 +9,21 @@ def calculateMaterialValue(board):
 def calculateSpaceValue(board):
 	pass
 # Generate all immediate boards from possible moves.
+class BoardValueState:
+	def __init__(self,board,time_since_last_update):
+		self.board = board
+		self.time_since_last_update = time_since_last_update
+		self.generator = calculateBoardValueRecurse(board);
+		self.value = next(self.generator)
+	def update(allowed_time):
+		self.time_since_last_update = 0
+		return self.generator.send(allowed_time)
+
 def generateFutureBoards(board):
 	future_boards = []
 	for move in board.legal_moves:
 		future_boards.append(board.copy(stack=False))
-		future_boards[len(future_boards)-1].push(move)
+		future_boards[-1].push(move)
 
 # Updates the known boards with a new value. TODO should probably take existing value into consideration based on some set of params.
 def updateValue(board,value):
@@ -88,8 +98,6 @@ def calculateBoardValueRecurse(board):
 			generator_index = schedule[random.randint(len(schedule))]
 			# Play the lottery and update
 			schedule_chances[generator_index] = board_generators[generator_index].send(min(maxTimePerMove,allowed_time - (time.monotonic()-start_time)))
-		# This is not quite right. Our board is now divorced from the original board generators. I don't think that's okay.
-		#board.push(board.legal_moves[schedule_chances.index(max(schedule_chances))])
 		allowed_time = (yield MAX_BOARD_VALUE - schedule_chances.index(max(schedule_chances))) if isOpponentMove else (yield schedule_chances.index(max(schedule_chances)))
 		start_time = time.monotonic()
 # Initialization stuff
