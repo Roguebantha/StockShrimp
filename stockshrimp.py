@@ -11,6 +11,8 @@ MAX_BOARD_VALUE = 1000
 global known_boards
 known_boards = {}
 
+global created_boards
+created_boards = 0
 # Returns total material value
 def calculateMaterialValue(board):
 	return 500
@@ -23,7 +25,8 @@ class BoardEvaluator:
 		self.value = next(self.generator)
 		self.time_since_last_update = 0
 		known_boards[board.fen()] = self
-
+		global created_boards
+		created_boards += 1
 	def update(self,allowed_time):
 		self.time_since_last_update = 0
 		return self.generator.send(allowed_time)
@@ -47,8 +50,9 @@ def updateValue(board,value):
 # Compute board value with literally no lookahead.
 def calculateBoardValueBaseCase(board):
 	# Do we already have a value? It must be better or equal to what I can compute on my own.
-	if board.fen() in known_boards:
-		return known_boards[board.fen()].value
+	fen = board.fen()
+	if fen in known_boards:
+		return known_boards[fen].value
 	# That's the worst case scenario. Return 0.
 	if board.is_checkmate():
 		return 0
@@ -137,7 +141,7 @@ if __name__ == '__main__':
 	board.push_san("Bc4")
 	board.push_san("Nf6")
 	start = time.monotonic()
-	move = calculateMove(board,2)
+	move = calculateMove(board,30)
 	end = time.monotonic()
 	print("Total time was ",end-start)
 	board.push_uci(move.uci())
@@ -145,5 +149,6 @@ if __name__ == '__main__':
 		print("Program succesfully checkmated")
 	else:
 		print("Program did not checkmate.")
+	print(created_boards)
 	#board.push_san("Qxf7")
 	"Test AI awesomeness."
