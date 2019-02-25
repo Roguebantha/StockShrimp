@@ -14,10 +14,28 @@ known_boards = {}
 global created_boards
 created_boards = 0
 # Returns total material value
+def materialValueHelper(board,turn):
+	return 9 * len(board.pieces(chess.QUEEN,turn)) + \
+		5 * len(board.pieces(chess.ROOK,turn)) + \
+		3 * (len(board.pieces(chess.KNIGHT,turn)) + len(board.pieces(chess.BISHOP,turn))) + \
+		1 * len(board.pieces(chess.PAWN,turn))
 def calculateMaterialValue(board):
-	return 500
+	my_value = materialValueHelper(board,board.turn)
+	opponent_value = materialValueHelper(board, not board.turn)
+	value =	500 + 500 * (my_value - opponent_value) / (my_value + opponent_value)
+	#print(board, my_value, opponent_value,value)
+	# In the edge case the opponent is ahead on value but cannot win, but I can (I have two pawns to one bishop) this code breaks.
+	if board.has_insufficient_material((value > 500) ^ (not board.turn)):
+		return 500
+	return value
+
+valuePerMove = MAX_BOARD_VALUE/218
 def calculateSpaceValue(board):
-	return 500
+	return valuePerMove * board.legal_moves.count() - 1
+def calculatePawnDistanceValue(board):
+	pass
+def calculateCheckValue(board):
+	pass
 # Generate all immediate boards from possible moves.
 def getBoardEvaluator(board,move):
 	board = board.copy(stack=False)
