@@ -1,0 +1,13 @@
+[Event "?"]
+[Site "?"]
+[Date "2019.02.25 00:42:27"]
+[Round "0"]
+[White "./stockshrimp.py"]
+[Black "./random_bot.py --exhibition"]
+[Result "1-0"]
+
+1. Nh3 Nf6 2. Nf4 e5 3. Ng6 h5 4. Nxh8 e4 5. Nxf7 Nc6 6. Nxd8 Ne5 7. Nxb7 c5 8.
+Nd6+ Ke7 9. c4 Ke6 10. Nxc8 a5 11. e3 Nf3+ 12. gxf3 Ra6 13. Bh3+ Ng4 14. Bxg4+
+Ke5 15. f4+ Kf6 16. Nd6 Ra8 17. Ne8+ Rxe8 18. Bxd7 a4 19. Qxh5 Re6 20. Qg5+ Kf7
+21. Bxe6+ Ke8 22. Qxg7 Kd8 23. Qd7# 1-0
+
