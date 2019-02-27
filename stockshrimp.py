@@ -217,16 +217,8 @@ class StockShrimpUCI(uci_client.UciClient):
 	def genmove(self,tokens):
 		#print(tokens)
 		start_time = time.monotonic()
-		try:
-			move = calculateMove(self.board,8)
-		except Exception as e:
-			uci_client.log("failed to calculate move!! pgn is:")
-			game = chess.pgn.Game()
-			game.setup(self.board)
-			uci_client.log(str(game))
-			uci_client.log(self.board.fen())
-			raise e
-		#uci_client.log("Length of time was ", time.monotonic() - start_time)
+		move = calculateMove(self.board,14)
+		uci_client.log("Length of time was ", time.monotonic() - start_time)
 		print("bestmove %s\n"%move)
 	def move(self,move):
 		self.board.push(move)
