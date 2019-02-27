@@ -1,0 +1,19 @@
+[Event "?"]
+[Site "?"]
+[Date "2019.02.27 04:07:41"]
+[Round "0"]
+[White "./stockshrimp.py"]
+[Black "./material_value_bot.py --exhibition --monte-carlo --num-evals 16384"]
+[Result "0-1"]
+
+1. e4 d5 2. d4 dxe4 3. Bg5 Nc6 4. Bb5 f6 5. Qh5+ g6 6. Qh4 fxg5 7. Qxe4 Bd7 8.
+Nc3 Na5 9. Nh3 Nf6 10. Qe5 c6 11. Bc4 Nxc4 12. Qxg5 Ng8 13. Ke2 Bxh3 14. gxh3
+Qxd4 15. a3 Nxb2 16. Rhd1 Nxd1 17. Nb5 Qxa1 18. Nc7+ Kd7 19. Nxa8 Nc3+ 20. Kd3
+Qxa3 21. Kc4 a6 22. f4 Kd8 23. Nb6 Na4 24. Nxa4 Qxa4+ 25. Kd3 Qa3+ 26. c3 Bg7
+27. Ke3 Qxc3+ 28. Ke2 Qxh3 29. Qa5+ Ke8 30. Ke1 Qxh2 31. Kd1 Qxf4 32. Ke2 c5
+33. Kd1 Qg4+ 34. Kc2 Qg5 35. Qa4+ Kd8 36. Qc4 b5 37. Qd3+ Ke8 38. Kb1 Bh6 39.
+Qf3 Qg1+ 40. Ka2 Qh2+ 41. Kb1 Qg1+ 42. Ka2 Qh2+ 43. Kb1 Qg1+ 44. Ka2 Qh2+ 45.
+Kb3 Bg7 46. Qc6+ Kf8 47. Qa8+ Kf7 48. Qd5+ Kf8 49. Qd8+ Kf7 50. Qd5+ Ke8 51.
+Qa8+ Kf7 52. Qd5+ e6 53. Qb7+ Ne7 54. Qf3+ Nf5 55. Qb7+ Kg8 56. Qa8+ Bf8 57.
+Qc8 Nd4+ 58. Kc3 b4+ 59. Kc4 Qe2# 0-1
+

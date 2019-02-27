@@ -1,0 +1,24 @@
+[Event "?"]
+[Site "?"]
+[Date "2019.02.25 23:12:24"]
+[Round "2"]
+[White "./stockshrimp.py"]
+[Black "./random_bot.py --exhibition"]
+[Result "1-0"]
+
+1. b4 d6 2. c3 d5 3. d3 Nf6 4. Qc2 b5 5. Qd1 Na6 6. Qc2 h6 7. Bg5 Bd7 8. Nh3
+Nh7 9. Be3 g6 10. Bf4 Bc8 11. Bc1 Rg8 12. Qd1 f6 13. Qc2 d4 14. Bf4 Qd5 15. Qb3
+Qd6 16. Ng1 c5 17. Be5 e6 18. Qb2 Rg7 19. Qc2 Rg8 20. Kd2 Qd7 21. Bb8 Ng5 22.
+Bg3 Qc7 23. Ke1 Ne4 24. Bf4 Nb8 25. bxc5 Nxc5 26. Qb3 Rg7 27. cxd4 Nb7 28. Qb4
+h5 29. Qc5 Kd7 30. Qxc7+ Ke8 31. Qd7+ Bxd7 32. Nf3 Be7 33. Bd2 e5 34. Be3 h4
+35. Bg5 h3 36. Bd2 exd4 37. Kd1 Nd8 38. g4 Kf7 39. Be1 Ke6 40. Ng1 Rg8 41. Nd2
+Re8 42. e4 Rg8 43. g5 Rf8 44. a4 Be8 45. Nb1 Ke5 46. Ra3 Bc6 47. Ra2 b4 48. Bd2
+a6 49. Ke2 f5 50. Ke1 b3 51. Ne2 Rh8 52. Bf4+ Ke6 53. Rc2 Bxa4 54. Rc4 Rh7 55.
+Rc1 Ndc6 56. f3 Bf8 57. Rg1 Rh4 58. Rg3 Bd6 59. Rg4 Ne5 60. Rg3 b2 61. Rc7 Bxc7
+62. Nc1 Nbc6 63. Na2 Bb3 64. Kf2 Rh6 65. Ke1 Rb8 66. Kf2 Ra8 67. Nb4 Ne7 68.
+Nc6 Bb8 69. Nb4 Rh7 70. Ke1 Ng8 71. Nd5 Nf7 72. Kf2 Ra7 73. e5 Re7 74. Rg4 Rh5
+75. Ne3 Nd6 76. Nd1 fxg4 77. Ndc3 Nb5 78. Ke2 Rh8 79. Ke1 Nf6 80. Na4 Na3 81.
+Bg3 Nxb1 82. Kf2 Kf7 83. f4 Bd5 84. f5 Kg7 85. Ke2 Bg2 86. Bh4 Ng8 87. Ke1 Ba7
+88. Nc3 Be4 89. Kf2 g3+ 90. Kxg3 Bb8 91. Nd1 Re8 92. Nc3 Nxc3 93. f6+ Kh7 94.
+dxe4 Bxe5+ 95. Kxh3 Nb1 96. Bxa6 Bc7 97. f7 Na3 98. fxe8=Q Bb8 99. Qf7# 1-0
+
