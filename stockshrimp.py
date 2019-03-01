@@ -23,7 +23,7 @@ def materialValueHelper(board,turn):
 		5 * len(board.pieces(chess.ROOK,turn)) + \
 		3 * (len(board.pieces(chess.KNIGHT,turn)) + len(board.pieces(chess.BISHOP,turn))) + \
 		1 * len(board.pieces(chess.PAWN,turn))
-def calculateMaterialValue(board):
+def calculateMaterialValue(board,legal_moves):
 	my_value = materialValueHelper(board,board.turn)
 	opponent_value = materialValueHelper(board, not board.turn)
 	value =	500 + 500 * (my_value - opponent_value) / (my_value + opponent_value)
@@ -34,10 +34,10 @@ def calculateMaterialValue(board):
 	return value
 
 valuePerMove = MAX_BOARD_VALUE/218
-def calculateSpaceValue(board):
-	my_value = valuePerMove * board.legal_moves.count()
+def calculateSpaceValue(board,pseudo_legal_moves):
+	my_value = valuePerMove * len(pseudo_legal_moves)
 	board.turn = not board.turn
-	opponent_value = valuePerMove * board.legal_moves.count()
+	opponent_value = valuePerMove * len(list(board.generate_pseudo_legal_moves()))
 	value =	500 + 500 * (my_value - opponent_value) / (my_value + opponent_value)
 	board.turn = not board.turn
 	return value
@@ -60,6 +60,8 @@ class BoardEvaluator:
 	def __init__(self,board,fen):
 		self.board = board
 		self.fen = fen
+		self.pseudo_legal_moves = list(self.board.generate_pseudo_legal_moves())
+		self.legal_moves = [move for move in self.pseudo_legal_moves if self.board.is_legal(move)]
 		self.generator = self.calculateBoardValueRecurse();
 		self.value = next(self.generator)
 		self.time_since_last_update = 0
@@ -72,7 +74,7 @@ class BoardEvaluator:
 		self.runs += 1
 		return self.generator.send(allowed_time)
 	def generateFutureBoards(self):
-		return [getBoardEvaluator(self.board,move) for move in self.board.legal_moves]
+		return [getBoardEvaluator(self.board,move) for move in self.legal_moves]
 	# Updates the known boards with a new value. TODO should probably take existing value into consideration based on some set of params.
 	def updateValue(self,value):
 		# For now, assuming the new value is better than the old.
@@ -95,7 +97,7 @@ class BoardEvaluator:
 		pseudo_cardinality = 0
 		sum = 0
 		for func,weight in base_case_board_value_funcs:
-			sum += weight * func(self.board)
+			sum += weight * func(self.board,self.pseudo_legal_moves)
 			pseudo_cardinality += weight
 		#print(sum,pseudo_cardinality)
 		return self.updateValue(sum / pseudo_cardinality)
