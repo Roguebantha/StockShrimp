@@ -4,6 +4,7 @@ import chess.pgn
 import time
 import numpy
 import random
+import traceback
 import uci_client
 
 global base_case_board_value_funcs
@@ -17,6 +18,11 @@ known_boards = {}
 
 global created_boards
 created_boards = 0
+
+pawnValueSlope = -1/143552238122304
+def softmax(x):
+	"""Compute softmax values for each sets of scores in x."""
+	return numpy.exp(x) / numpy.sum(numpy.exp(x), axis=0)
 # Returns total material value
 def materialValueHelper(board,turn):
 	return 9 * len(board.pieces(chess.QUEEN,turn)) + \
@@ -41,10 +47,11 @@ def calculateSpaceValue(board,pseudo_legal_moves):
 	value =	500 + 500 * (my_value - opponent_value) / (my_value + opponent_value)
 	board.turn = not board.turn
 	return value
-def calculatePawnDistanceValue(board):
-	pass
-def calculateCheckValue(board):
-	pass
+def calculatePawnDistanceValue(board,unused):
+	return pawnValueSlope * int(board.pieces(chess.PAWN,board.turn) if board.turn else board.pieces(chess.PAWN,board.turn).mirror()) + MAX_BOARD_VALUE
+
+def calculateCheckValue(board,unused):
+	return 300 if board.is_check() else 500
 def calculateThreatsValue(board):
 	pass
 # Generate all immediate boards from possible moves.
@@ -65,6 +72,7 @@ class BoardEvaluator:
 		self.generator = self.calculateBoardValueRecurse();
 		self.value = next(self.generator)
 		self.time_since_last_update = 0
+		self.boards_generated = False
 		self.runs = 0
 		known_boards[self.fen] = self
 		global created_boards
@@ -78,6 +86,8 @@ class BoardEvaluator:
 	# Updates the known boards with a new value. TODO should probably take existing value into consideration based on some set of params.
 	def updateValue(self,value):
 		# For now, assuming the new value is better than the old.
+		if value < 0 or value > MAX_BOARD_VALUE:
+			raise Exception("MAX BOARD VALUE exceeded!!")
 		self.value = value
 		return value
 	# Compute board value with literally no lookahead.
@@ -112,12 +122,14 @@ class BoardEvaluator:
 		# What time did we start?
 		start_time = time.monotonic()
 		future_boards = self.generateFutureBoards()
+		self.boards_generated = True
 		schedule_chances = [b.value for b in future_boards]
 		numPossibleMoves = len(future_boards)
 		if numPossibleMoves == 0:
 			while True:
 				yield self.value
 		#opportunities = 1
+		self.temperature = 2048
 		while True:
 			elapsed_time = time.monotonic()-start_time
 			# How long should we analyze submoves? enough time to theoretically analyze all possible moves.
@@ -126,10 +138,15 @@ class BoardEvaluator:
 				#Choose a board.
 				if sum(schedule_chances) == 0:
 					break
-				if random.random() > 0.5:
-					chosenBoardIndex = numpy.random.choice(range(numPossibleMoves),p=numpy.divide(schedule_chances,sum(schedule_chances)))
-				else:
-					chosenBoardIndex = schedule_chances.index(max(schedule_chances))
+				#if random.random() > 0.5:
+				#print(self.temperature)
+				#print(softmax(numpy.divide(schedule_chances,self.temperature)))
+				chosenBoardIndex = numpy.random.choice(range(numPossibleMoves),p=softmax(numpy.divide(schedule_chances,self.temperature)))
+				if self.temperature > 1:
+					self.temperature /= 2
+
+				#else:
+				#	chosenBoardIndex = schedule_chances.index(max(schedule_chances))
 				max_value = max(schedule_chances)
 				#print("Highest value move is currently ",list(self.board.legal_moves)[schedule_chances.index(max_value)])
 				#print("With a score of ",max_value)
@@ -143,6 +160,7 @@ class BoardEvaluator:
 				#	print("Move: " + str(list(board.legal_moves)[i]) + "; Value: " + str(schedule_chances[i]) + "; Runs: ",future_boards[i].runs)
 				#print("\n")
 			# We're calculating value from the opponent's perspective, relative to the caller. So the lower the value, the better. Invert board value.
+			self.value = max(schedule_chances)
 			allowed_time = yield (MAX_BOARD_VALUE - max(schedule_chances))
 			#opportunities += 1
 			start_time = time.monotonic()
@@ -160,6 +178,15 @@ def deprecate_evaluator(board,fen):
 		known_boards[fen]
 		return True
 	return False
+def enumerate_board(board_evaluator):
+	if not board_evaluator.boards_generated:
+		return
+	future_boards = board_evaluator.generateFutureBoards()
+	values = [board.value for board in future_boards]
+	turn = "white" if board_evaluator.board.turn else "black"
+	chosenIndex = values.index(max(values))
+	print("Highest value move for " + turn + " was: " + str(board_evaluator.legal_moves[chosenIndex]) + "; Value: " + str(future_boards[chosenIndex].value) + "; Runs: ", future_boards[chosenIndex].runs)
+	enumerate_board(future_boards[chosenIndex])
 # Returns a final move based on board.
 def calculateMove(board,allowed_time):
 	# What time did we start thinking about this?
@@ -179,13 +206,12 @@ def calculateMove(board,allowed_time):
 	# Keep doing this until we're out of time
 	elapsed_time = time.monotonic()-start_time
 	max_allowed_time = allowed_time/(numPossibleMoves)
+	temperature = pow(2,19)
 	while elapsed_time < allowed_time or schedule_chances.index(max(schedule_chances)) != visited.index(max(visited)):
-	#while elapsed_time < allowed_time:
 		# This is likely the most expensive one-liner in the whole program.
-		if random.random() > 0.5:
-			chosenBoardIndex = numpy.random.choice(range(numPossibleMoves),p=numpy.divide(schedule_chances,sum(schedule_chances)))
-		else:
-			chosenBoardIndex = schedule_chances.index(max(schedule_chances))
+		chosenBoardIndex = numpy.random.choice(range(numPossibleMoves),p=softmax(numpy.divide(schedule_chances,temperature)))
+		if temperature > 1:
+			temperature /= 2
 		max_value = max(schedule_chances)
 		#print("Highest value move is currently ",list(board.legal_moves)[schedule_chances.index(max_value)])
 		#print("With a score of ",max_value)
@@ -196,8 +222,11 @@ def calculateMove(board,allowed_time):
 		schedule_chances[chosenBoardIndex] = future_boards[chosenBoardIndex].update(min(max_allowed_time,allowed_time - elapsed_time))
 		#print("Now has calculated value ", schedule_chances[chosenBoardIndex])
 		elapsed_time = time.monotonic()-start_time
+
+	#enumerate_board(future_boards[schedule_chances.index(max(schedule_chances))])
 	#for i in range(len(schedule_chances)):
-	#	print("Move: " + str(list(board.legal_moves)[i]) + "; Value: " + str(schedule_chances[i]) + "; Runs: ",future_boards[i].runs)
+		#print("Move: " + str(list(board.legal_moves)[i]) + "; Value: " + str(schedule_chances[i]) + "; Runs: ",future_boards[i].runs)
+	#print("Created " + str(created_boards) + " boards")
 	return list(board.legal_moves)[schedule_chances.index(max(schedule_chances))]
 
 
@@ -206,8 +235,10 @@ def calculateMove(board,allowed_time):
 
 # Assigning arbitrary weights to these functions based on guess work. If I felt like spending time making a harness along with some light
 # machine learning work, I could customize these parameters programmatically to find just how valuable these different aspects of a board are relative to each other.
-base_case_board_value_funcs.append((calculateMaterialValue,8))
-base_case_board_value_funcs.append((calculateSpaceValue,1))
+base_case_board_value_funcs.append((calculateMaterialValue,256))
+base_case_board_value_funcs.append((calculateSpaceValue,16))
+base_case_board_value_funcs.append((calculatePawnDistanceValue,8))
+base_case_board_value_funcs.append((calculateCheckValue,4))
 
 class StockShrimpUCI(uci_client.UciClient):
 	def __init__(self):
@@ -219,7 +250,12 @@ class StockShrimpUCI(uci_client.UciClient):
 	def genmove(self,tokens):
 		#print(tokens)
 		start_time = time.monotonic()
-		move = calculateMove(self.board,14)
+		try:
+				  move = calculateMove(self.board,14)
+		except Exception as exc:
+			traceback.print_exc(file=sys.stderr)
+			uci_client.log("Board was: ",self.board.fen())
+			sys.exit()
 		uci_client.log("Length of time was ", time.monotonic() - start_time)
 		print("bestmove %s\n"%move)
 	def move(self,move):
@@ -230,6 +266,6 @@ class StockShrimpUCI(uci_client.UciClient):
 				deprecate_evaluator(self.board,key)
 if __name__ == '__main__':
 	StockShrimpUCI().main_loop()
-	board = chess.Board("r1b1kbnr/1pp1p3/2nq2pp/pB1pNp1Q/P7/2N1P3/1PPP1PPP/R1B1K2R w KQkq - 0 9")
-	move = calculateMove(board,8)
+	board = chess.Board("r1b5/pp4k1/2p3p1/3p4/2n1pP2/2P1P1pP/2P1K3/R6R w - - 4 40")
+	move = calculateMove(board,14)
 	print(move)
