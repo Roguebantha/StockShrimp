@@ -34,7 +34,7 @@ def materialValueHelper(board,turn):
 		5 * len(board.pieces(chess.ROOK,turn)) + \
 		3 * (len(board.pieces(chess.KNIGHT,turn)) + len(board.pieces(chess.BISHOP,turn))) + \
 		1 * len(board.pieces(chess.PAWN,turn))
-def calculateMaterialValue(board,legal_moves):
+def calculateMaterialValue(board,unused):
 	my_value = materialValueHelper(board,board.turn)
 	opponent_value = materialValueHelper(board, not board.turn)
 	value =	500 + 500 * (my_value - opponent_value) / (my_value + opponent_value)
@@ -257,9 +257,11 @@ base_case_board_value_funcs.append([calculateMaterialValue,256])
 base_case_board_value_funcs.append([calculateSpaceValue,16])
 base_case_board_value_funcs.append([calculatePawnDistanceValue,8])
 base_case_board_value_funcs.append([calculateCheckValue,4])
-def board_run_test():
+#base_case_board_value_funcs.append([calculateMaterialValue,4096])
+#base_case_board_value_funcs.append([calculatePawnDistanceValue,1024])
+def board_run_test(fen):
 	#board = chess.Board('3k4/r3n1b1/bp5P/p4pn1/P1qPp1p1/1P2P3/Q1pR1PP1/4K2R w - - 2 50')
-	board = chess.Board('7k/4p3/2p2p2/5r2/6K1/3q4/4r3/8 w - - 10 52')
+	board = chess.Board(fen)
 	move = calculateMove(board,14)
 	#board.push(move)
 	print(move)
@@ -289,5 +291,7 @@ class StockShrimpUCI(uci_client.UciClient):
 			if not decay_evaluator(key):
 				deprecate_evaluator(self.board,key)
 if __name__ == '__main__':
+	if len(sys.argv) > 1:
+		board_run_test(sys.argv[1])
+		quit()
 	StockShrimpUCI().main_loop()
-	#board_run_test()
