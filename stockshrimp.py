@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import chess
 import chess.pgn
+import chess.polyglot
 import sys
 import time
 import numpy
@@ -9,20 +10,20 @@ import traceback
 #import scipy.special
 import uci_client
 
-global base_case_board_value_funcs
 base_case_board_value_funcs = []
 
-global MAX_BOARD_VALUE
 MAX_BOARD_VALUE = 1000
 
-global known_boards
 known_boards = {}
 
-global created_boards
 created_boards = 0
 
 pawnValueSlope = -1/143552238122304
-
+opening_book = None
+try:
+	opening_book = chess.polyglot.open_reader("./openingbook.bin")
+except:
+	sys.stderr.write("WARNING: No opening book found.\n")
 max_temperature = pow(2,63)
 def softmax(x):
 	"""Compute softmax values for each sets of scores in x."""
@@ -86,6 +87,10 @@ class BoardEvaluator:
 		self.runs += 1
 		return self.generator.send(allowed_time)
 	def generateFutureBoards(self):
+		if opening_book is not None:
+			opening_book_evals = [getBoardEvaluator(self.board,entry.move()) for entry in opening_book.find_all(self.board)]
+			if len(opening_book_evals) > 0:
+				return opening_book_evals
 		return [getBoardEvaluator(self.board,move) for move in self.legal_moves]
 	# Updates the known boards with a new value.
 	def updateValue(self,value):
@@ -245,6 +250,10 @@ def calculateMove(board,allowed_time):
 	#global created_boards
 	#uci_client.log("Created " + str(created_boards) + " boards")
 	#created_boards = 0
+	if opening_book is not None:
+		opening_book_moves = [entry.move() for entry in opening_book.find_all(board)]
+		if len(opening_book_moves) > 0:
+			return opening_book_moves[schedule_chances.index(max(schedule_chances))]
 	return list(board.legal_moves)[schedule_chances.index(max(schedule_chances))]
 
 

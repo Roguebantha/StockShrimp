@@ -11,3 +11,31 @@ Nd6+ Ke7 9. c4 Ke6 10. Nxc8 a5 11. e3 Nf3+ 12. gxf3 Ra6 13. Bh3+ Ng4 14. Bxg4+
 Ke5 15. f4+ Kf6 16. Nd6 Ra8 17. Ne8+ Rxe8 18. Bxd7 a4 19. Qxh5 Re6 20. Qg5+ Kf7
 21. Bxe6+ Ke8 22. Qxg7 Kd8 23. Qd7# 1-0
 
+[Event "Computer Chess Game"]
+[Site "localhost.localdomain"]
+[Date "2019.04.13"]
+[Round "-"]
+[White "root"]
+[Black "stockshrimp"]
+[Result "0-1"]
+[TimeControl "40/300"]
+
+1. e4 e5 2. Nf3 Nf6 3. Nc3 Nc6 4. d4 exd4 5. Nxd4 Bc5 6. Be3 Bb4 7. f3 d6
+8. a3 Bxc3+ 9. bxc3 d5 10. Bd3 dxe4 11. fxe4 Ng4 12. O-O Nxe3 13. Qf3 Nxf1
+14. Rxf1 Qe7 15. Bb5 g6 16. Nxc6 Qf8 17. Ne5+ c6 18. Nxc6 Bd7 19. e5 bxc6
+20. Bxc6 Qc5+ 21. Kh1 Bxc6 22. Qxf7+ Kd8 23. Qf6+ Kc7 24. Qg7+ Kb6 25. Rb1+
+Bb5 26. Qf6+ Kc7
+{White resigns} 0-1
+
+[Event "Computer Chess Game"]
+[Site "localhost.localdomain"]
+[Date "2019.04.13"]
+[Round "-"]
+[White "root"]
+[Black "stockshrimp"]
+[Result "*"]
+[TimeControl "40/300"]
+
+1. e4 e5
+{Game aborted (Clocks: 293, 284)} *
+
